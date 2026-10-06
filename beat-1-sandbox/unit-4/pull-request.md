@@ -15,15 +15,11 @@ label is not graded.
 
 **Pull request**
 
-[Link to the pull request you opened. It must be the pull request's own page on the Path
-Review repo, not your fork's branch page.]
+https://github.com/codepath/pathreview-ai301-fa26-s3/pull/98
 
 **Branch**
 
-[The name of the branch the pull request comes from, exactly as it appears in your fork.
-The naming shape is a type prefix, then the issue number, then a short description. **The
-issue number in the branch name must be the number of the issue the pull request fixes** —
-a name carrying any other number does not satisfy this field.]
+fix/69-json-array-fallback
 
 ## Eval iterations
 
@@ -32,28 +28,35 @@ fields.
 
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+Smoke run: 3/3 scored packages matched.
+
+My first attempted full run stopped before producing a score because Windows Python hit a cp1252 Unicode encoding error. I enabled Python UTF-8 mode and reran the evaluation.
+
+Full Run 1: 18/20. The category floor passed. The two disagreements were pkg-16 and pkg-19, both clear-accept packages that my rubric rejected on Test evidence.
+
+I kept the rubric unchanged because it already met the 18/20 bar and correctly matched every package in the four failure categories.
+
+Final Full Run: 19/20. The category floor passed in every category. The only disagreement was pkg-05. This is the run recorded in eval-run.txt.
 
 **Package analysis**
 
-[Pick one scored package (`pkg-01` through `pkg-20` — the four `calib-` packages are never
-scored). Name it by id, say what your rubric decided and what the gold label said, and
-explain why your rubric read it that way.]
+Package: pkg-05
+
+My rubric verdict: reject
+
+Gold verdict: accept
+
+My rubric rejected pkg-05 because the Test evidence check did not pass. My check requires the planned behavior to be demonstrated with observable evidence and also requires the outcome of each required repository check to be visible. The package had enough evidence for the gold label to accept it, but my rubric interpreted the available test/check evidence more conservatively and therefore rejected it.
 
 **Check rationale**
 
-[Quote one check from the `rubric.md` you uploaded to `tools/pr-precheck/`, exactly as it reads now.
-Then say why it reads that way — what you revised to get there, or what you rejected in
-favour of it.]
+> Pass when the planned behavior is demonstrated with observable evidence, including before-and-after results where the plan calls for reproduction, and the outcome of each required repository check is visible. Unsupported statements such as "tests pass" do not count as evidence.
+
+I wrote this check to require evidence that another reviewer can actually verify instead of accepting unsupported claims such as "tests pass." It also checks both the specific behavior being fixed and the repository-level checks. This makes the rubric conservative, which helped it catch missing evidence, although it also caused the false rejection on pkg-05.
 
 **Trade-offs**
 
-[Every check gives something up. Any one of these is a complete answer: a package whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
+The Test evidence check is intentionally conservative. It can reject a technically sound PR when the important behavior is demonstrated but one required repository-check result is not explicitly visible. That happened with pkg-05. The benefit is that the tool does not silently assume an unreported check passed; the trade-off is that it can produce an occasional false rejection of an otherwise acceptable PR.
 
 ---
 
