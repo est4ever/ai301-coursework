@@ -55,10 +55,9 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-**Unit 5: [one line on the tool work]**
+Unit 5: Building and Improving My Issue Scout
 
-[2-4 sentences: what you built (the scout, your strategy), what broke
-or fell short, what changed because of it.]
+I upgraded my Unit 1 issue-selection skill into an issue scout that searches GitHub, ranks candidate issues, and grades them using my existing rubric. My first scan returned 200 issues, but the ranking favored newly created repositories with limited discussion, so I adjusted the filters to prioritize more relevant issues. When I graded additional candidates, I found problems involving existing claims, active pull requests, and unclear project requirements. I documented these findings and improved my search strategy to make future issue selection more reliable.
 
 **Unit 6: [one line on the tool work]**
 
