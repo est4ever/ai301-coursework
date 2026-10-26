@@ -1,4 +1,3 @@
-# Contribution: [Issue Title]
 
 Path: `beat-2-contribution/contribution-story.md`
 
@@ -7,12 +6,17 @@ the repository is not read. **Keep every section header below under its exact na
 format criteria grade exactly that. Your course repo link is the whole submission: no tool
 files and no evidence uploads are part of Assignment 5.
 
+# Contribution: Improve toaster message on network connection
+
 **Contribution Number:** [1]
-**Student:** [Student name]
-**GitHub Username:** [your GitHub username, exactly as it appears on your profile - no @, no
-profile URL. Your comments upstream are identified by this name.]
-**Issue:** [GitHub issue link]
-**Pull Request:** [GitHub PR link, once opened]
+
+**Student:** Jesse Lin
+
+**GitHub Username:** est4ever
+
+**Issue:** https://github.com/ICTU/quality-time/issues/12823
+
+**Pull Request:** Not opened yet
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -55,15 +59,13 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-Unit 5: Building and Improving My Issue Scout
+**Unit 5: Built and improved an issue-scout tool for GitHub issues**
 
-I upgraded my Unit 1 issue-selection skill into an issue scout that searches GitHub, ranks candidate issues, and grades them using my existing rubric. My first scan returned 200 issues, but the ranking favored newly created repositories with limited discussion, so I adjusted the filters to prioritize more relevant issues. When I graded additional candidates, I found problems involving existing claims, active pull requests, and unclear project requirements. I documented these findings and improved my search strategy to make future issue selection more reliable.
+I upgraded my issue-scout tool to search for, rank, and evaluate open-source GitHub issues using a grading rubric. My initial scan returned 200 issues, but the ranking favored newer repositories with limited discussion, so I adjusted my search strategy. I also found that the original scope check was too strict for real issues, so I replaced it with `scope-feasible` and added difficulty notes. After regrading my candidates and checking for existing claims or related pull requests, I selected Quality Time #12823 as a manageable contribution.
 
-**Unit 6: [one line on the tool work]**
+**Unit 6: Installed a voice guard and created local repository memory**
 
-[2-4 sentences: the voice-guard, the repo-memory file. What broke or
-fell short, and what changed because of it. "Nothing broke" counts when
-it is true - say how you know.]
+I installed a voice guard to check my GitHub comments against my writing rules before posting them. I also created a `CLAUDE.local.md` file for the Quality Time repository, documenting its contribution conventions, relevant frontend files, and test commands. The initial template lacked repository-specific information, so I used Claude Code to inspect the measurement-fetching subsystem and added those findings to the memory file. I excluded the file using `.git/info/exclude` and verified that Git ignored it.
 
 **Unit 7: [one line on the tool work]**
 
@@ -79,24 +81,20 @@ drafted, what you did with the draft.]
 
 ## Why I Chose This Issue
 
-[1-2 paragraphs in your own words: how you searched, what your scan
-surfaced, what your scout's verdict said, why this issue fits your
-profile, and what you hope to learn. If your scout's verdict on it
-was reject and you chose it anyway, say so here and say why; choosing
-against your own tool silently is what loses points. Close with an
-honest read of the tool itself: where the scout fell short on a real
-wild search and what you changed or would change, or what convinced
-you it held up. **Record the link to your claim comment in this section too.**
-Not claimed yet? Write `claim pending` and today's date where the link goes,
-and add the link the moment your claim lands.]
+I initially considered contributing to NVDA, but after evaluating different issues, I decided to look for something more manageable. I used my issue-scout to directly grade three candidates: Quality Time #12823, simpler-grants-gov #12056, and Red-DiscordBot #6794. Quality Time ranked as the best fit because the maintainer had already explained the requested change, the repository was active, and nobody had claimed the issue when I evaluated it.
+
+My issue-scout evaluated this issue on October 22, 2026, and gave it an **accept** verdict with a **moderate** difficulty rating. It passed all four checks: maintainer-active, repo-active, scope-feasible, and unclaimed. The scout considered it moderate because the maintainer had already specified the desired wording, but I still needed to locate the relevant error-handling code. It also noted that identifying a specific metric or subject would be difficult because some measurement requests retrieve data for all metrics at once.
+
+I chose this issue because I wanted more experience working with real software projects, especially debugging existing code and improving how applications handle errors. Even though I have programming experience, I haven't worked much with React or large open-source frontend projects. This issue gives me an opportunity to understand how API requests, error notifications, and automated tests work together. I also learned that my original issue-scout rubric was too strict for real-world GitHub issues, so I updated it to better evaluate whether an issue was manageable.
+
+**Claim Comment:** https://github.com/ICTU/quality-time/issues/12823#issuecomment-6333904364
 
 **Toolkit**
 
-- Tool: issue-scout (your scout: your search strategy, your rubric),
-  and how you used it
-- What it produced: [the scan and its verdict on this issue, described]
-- Difficulties: [where it fell short, or "none met" if none did]
-- What changed: [what you patched or would update, or "nothing"]
+- **Tool:** issue-scout, which I used to search for, evaluate, and compare potential GitHub issues.
+- **What it produced:** A set of graded issues, including Quality Time #12823, that helped me decide which contribution to pursue.
+- **Difficulties:** The original scope check was too strict for real GitHub issues. I also found that the `unclaimed` check could miss signs of ongoing internal work mentioned in previously closed pull requests.
+- **What changed:** I replaced the original scope check with `scope-feasible`, added difficulty notes, and recorded the limitation of the `unclaimed` check for future improvements.
 
 ---
 
@@ -104,26 +102,31 @@ and add the link the moment your claim lands.]
 
 **Problem Description**
 
-[In your own words, what is broken or missing?]
+Quality Time currently displays a generic error notification when it cannot retrieve measurements from the server. The notification says "Could not fetch measurements" but does not provide enough information for users to understand which request failed or what caused the problem.
 
 **Expected Behavior**
 
-[What should happen?]
+The error notification should provide clearer information about the failed request. When possible, it should identify the relevant metric and subject and clearly label HTTP status information. However, report-wide requests retrieve measurements for multiple metrics at once, so identifying one specific metric is not always possible.
 
 **Current Behavior**
 
-[What actually happens?]
+The frontend displays the title "Could not fetch measurements" followed by a generic error description such as "Failure" or "Internal Server Error." The notification does not identify the affected metric or subject. I confirmed this behavior by inspecting the error handlers and running the existing frontend tests, all 29 of which passed.
 
 **Affected Components**
 
-[Which parts of the codebase are involved?]
+The main components involved are:
+
+- `PageContent.jsx`: Handles report-wide measurement requests and displays an error notification when a request fails.
+- `MetricDetails.jsx`: Handles measurement requests for individual metrics and displays errors for rejected requests or unsuccessful responses.
+- `PageContent.test.jsx`: Tests the report-wide measurement error behavior.
+- `MetricDetails.test.jsx`: Tests the individual-metric error behavior.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- **Tool:** Claude Code, used to examine the relevant frontend source files and understand the existing error handling.
+- **What it produced:** An explanation of the two measurement-fetching paths, their error handlers, and the tests associated with each component.
+- **Difficulties:** The application handles measurement requests in multiple places, which made it difficult to determine where the issue should be fixed.
+- **What changed:** I narrowed my investigation to `PageContent.jsx` and `MetricDetails.jsx` and identified the relevant tests before planning any modifications.
 
 ---
 
@@ -131,31 +134,43 @@ and add the link the moment your claim lands.]
 
 **Environment Setup**
 
-[What a stranger would need to stand this up: your operating system,
-the relevant versions (language, runtime, package manager, the project
-itself), and how you set the project up. Then the challenges you faced
-and how you solved them, or that none came up.]
+I reproduced the existing error-message behavior using Windows 11, Node.js v24.19.0, and npm 11.17.0. I forked and cloned the Quality Time repository and created a local branch named `fix-12823-network-error`.
+
+The tested commit was `b7d1a1a2fd620f4e4d515fdbb047542838a255d7`.
+
+I installed the frontend dependencies using `npm ci`. The repository requests Node.js 26.11.1, so npm displayed an unsupported-engine warning. However, installation completed successfully, and the relevant tests ran without errors.
 
 **Steps to Reproduce**
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. Clone `https://github.com/ICTU/quality-time.git` and check out commit `b7d1a1a2fd620f4e4d515fdbb047542838a255d7`.
+2. Navigate to `components/frontend`.
+3. Run `npm ci` to install the dependencies.
+4. Run the following command:
+
+   `npm run test -- --run src/metric/MetricDetails.test.jsx src/PageContent.test.jsx`
+
+5. Inspect the tests named `fails to load measurements due to a failed promise` and `fails to load measurements due to an internal server error` in `MetricDetails.test.jsx`.
+6. Inspect `fails to load measurements` in `PageContent.test.jsx`.
+7. Compare the expected error messages against the actual handlers in `MetricDetails.jsx` and `PageContent.jsx`.
 
 **Reproduction Evidence**
 
-- **Commit showing reproduction:** [link to commit in your fork]
-- **Screenshots/logs:** [if applicable]
-- **My findings:** [what you discovered during reproduction; an
-  honest, evidenced cannot-reproduce that led you to re-pick or ask
-  the maintainer belongs here and costs you nothing]
+- **Commit showing reproduction:** none (I used existing tests at upstream commit `b7d1a1a2fd620f4e4d515fdbb047542838a255d7`).
+- **Screenshots/logs:** The test output showed `2 passed` test files and `29 passed` tests, with a duration of 4.66 seconds.
+- **My findings:** The existing tests confirm that failed measurement requests produce the generic notification "Could not fetch measurements". For example, the rejected-promise test expects a notification containing `severity: "error"`, `title: "Could not fetch measurements"`, and `description: "Failure"`.
+
+I also inspected the source code. `PageContent.jsx` uses the error's message as the description, while `MetricDetails.jsx` uses either the error message or the HTTP status text. Neither currently adds metric or subject context to the notification.
+
+The maintainer explained that report-wide measurement requests fetch data for multiple metrics simultaneously. Therefore, it is not always possible to identify one specific metric or subject in the error notification.
+
+All 29 existing tests passed because they verify the current behavior. This reproduction uses simulated network failures rather than an actual live network outage.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- **Tool:** repro-check, used to evaluate my claim comment and reproduction report.
+- **What it produced:** An accepted reproduction report containing environment details, exact testing commands, and evidence from the source code and existing tests.
+- **Difficulties:** My first report was rejected because I only included the number of passing tests without showing the actual error messages. My second version was rejected because I had not recorded the Git commit ID.
+- **What changed:** I added the exact error-message assertions, relevant code excerpts, test names, and commit hash. After these changes, repro-check passed all five checks.
 
 ---
 
