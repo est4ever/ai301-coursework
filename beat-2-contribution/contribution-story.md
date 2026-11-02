@@ -7,7 +7,7 @@ GitHub Username: est4ever
 
 Issue: https://github.com/ICTU/quality-time/issues/12823
 
-Pull Request: Not opened yet
+Pull Request: https://github.com/ICTU/quality-time/pull/14940
 
 One repository, built across units 5 to 8, telling the whole story of my real open-source contribution.
 Toolkit
@@ -19,9 +19,11 @@ Unit 6: Installed a voice guard and created local repository memory
 
 I installed a voice guard to check my GitHub comments against my writing rules before posting them. I also created a CLAUDE.local.md file for the Quality Time repository, documenting its contribution conventions, relevant frontend files, and test commands. The initial template lacked repository-specific information, so I used Claude Code to inspect the measurement-fetching subsystem and added those findings to the memory file. I excluded the file using .git/info/exclude and verified that Git ignored it.
 
-Unit 7: Configured a ship-gate and passed plan-check for issue #12823
+Unit 7: Configured a ship-gate, passed plan-check, implemented the fix, and opened PR #14940
 
-I installed the Unit 7 ship-gate and created a manifest for the frontend tests, lint checks, and build. Windows timezone, shell, and CRLF line-ending differences initially caused failures, so I adjusted the commands without modifying unrelated files. I verified the ship-gate and voice guard independently, then used plan-check to review my proposed fix against the maintainer's comments. After several revisions to the notification wording, test expectations, and scope, plan-check returned accept with all six checks passing; the full branch ship-gate has not been run yet.
+I installed the Unit 7 ship-gate and created a manifest for the frontend tests, lint checks, and build. Windows timezone, shell, and CRLF line-ending differences initially caused failures, so I adjusted the commands without modifying unrelated files. I verified the ship-gate and voice guard independently, then used plan-check to review my proposed fix against the maintainer's comments. After several revisions to the notification wording, test expectations, and scope, plan-check returned accept with all six checks passing.
+
+I then implemented the fix in one commit that changed four implementation and test files. Three updated regression tests failed against the original implementation, and all 29 focused tests passed after the fix. The full frontend suite passed 1,108 tests across 110 files, and lint, formatting, lockfile, and build checks passed. The ship-gate passed all required checks before Claude Code opened PR #14940, which is awaiting review.
 
 Unit 8: Pending — PR monitoring and maintainer feedback
 
@@ -152,7 +154,10 @@ Risks and Unknowns
 - Missing HTTP status: Some rejected requests provide only an exception message. The notification should never fabricate HTTP status details.
 Deviations from the Plan
 
-No source-code implementation deviations have occurred yet. The planning draft was revised after feedback to make the additional PageContent.jsx HTTP failure path conditional on maintainer approval. Any future implementation deviation will be recorded here and in plan.md.
+The planning draft was revised after feedback to make the additional PageContent.jsx HTTP failure path conditional on maintainer approval. The implementation otherwise followed the accepted plan, with these recorded decisions:
+
+- Focused ESLint dependency suppression (deviation): Passing the metric and subject names into fetchMeasurements() made them part of the measurement-fetching effect in MetricDetails.jsx. Adding them to the dependency array would refetch measurements whenever a name changed, even though the names are only used in the error message. I kept the dependency array as [metricUuid, reportDate] and added a targeted eslint-disable-next-line @eslint-react/exhaustive-deps comment, following an approach already used elsewhere in the project. The plan did not anticipate this, so I recorded it as a deviation and explained it in the PR description.
+- Report-wide HTTP ok === false handling (deliberately excluded): The maintainer has not approved adding a new notification for resolved report-wide responses with ok === false, so I left that behavior unchanged and did not include conditional Test Case D. The PR description asks the maintainers whether it belongs in this PR or a separate issue.
 
 Toolkit
 - Tool: Claude Code plan-check, used to grade plan.md and plan-comment.md against the issue discussion, repository code, reproduction evidence, and the course rubric.
@@ -170,13 +175,15 @@ These tests establish the baseline behavior. They do not prove that the maintain
 
 2. Focused Tests for the Fix
 
-I will update or add tests to verify that:
-- A report-wide measurement failure produces a clear message without falsely identifying an individual metric.
-- An individual-metric failure includes available identifying context when appropriate.
-- An unsuccessful individual-metric HTTP response displays useful status information. A corresponding report-wide HTTP test is conditional on maintainer approval.
-- A rejected network request without an HTTP response is handled without assuming that an HTTP status exists.
-- The application continues displaying an error notification with the correct severity.
-I will compare the notifications before and after the fix and record the exact results.
+I updated three regression tests in PageContent.test.jsx and MetricDetails.test.jsx to verify that:
+- A report-wide measurement failure produces the new connectivity title without falsely identifying an individual metric, and keeps the original error message as the description (Case A).
+- An individual-metric rejected request names the metric and subject, including the fallback metric name Violations, and does not invent an HTTP status (Case B).
+- An individual-metric HTTP 502 response displays HTTP status code: 502. HTTP status message: Bad gateway. and the measurement loading state indicates failure (Case C).
+I also changed the test fixture's subject name to Example subject so the expected notification is clearer. Conditional Test Case D was not added because the report-wide ok === false path was excluded from the PR.
+
+Results:
+- Before the fix: The three updated regression tests failed against the original implementation, while the other 26 focused tests passed.
+- After the fix: All 29 focused tests passed.
 
 3. Full Frontend Test Suite
 
@@ -193,7 +200,7 @@ The first full test run without the timezone override had two failures related t
 
 Running the suite with TZ=UTC resolved these failures without requiring source-code changes.
 
-I will rerun the full test suite after implementing the fix and compare the results.
+After implementing the fix, I reran the full suite. It again passed 1,108 tests across 110 test files.
 
 4. Frontend Linting and Formatting
 
@@ -215,7 +222,7 @@ Results:
 - Lockfile check: No issues detected.
 The ESLint warning was in DashboardCard.jsx, outside the files involved in my planned fix.
 
-I will rerun these checks after implementing the fix.
+After implementing the fix, I reran these checks. ESLint reported zero errors and the same pre-existing DashboardCard.jsx warning, and Prettier and lockfile-lint passed.
 
 5. Production Build
 
@@ -227,20 +234,23 @@ The Vite build completed successfully and reported 2,003 modules transformed.
 
 Vite displayed a warning that some generated chunks exceeded 500 kB after minification. This warning did not prevent the build from succeeding.
 
+After implementing the fix, the production build passed again.
+
 6. Final Verification
 
-After implementing the fix, I will save the following in test_evidence.md:
-- The original notification behavior and the updated behavior.
-- The reproduction commands and their actual results.
-- Focused test output.
-- Full frontend test-suite results.
-- Lint and formatting results.
-- Production build results.
-The final results will be recorded here after the implementation is complete.
+Final results after the fix:
+- Focused regression tests: 29/29 passed; the three updated tests failed against the original implementation.
+- Full frontend test suite: 1,108 tests across 110 test files passed.
+- ESLint: 0 errors and 1 pre-existing warning in DashboardCard.jsx.
+- Prettier: Passed.
+- lockfile-lint: Passed.
+- Production build: Passed.
+- Ship-gate: Passed all required checks before the PR was opened.
+The changes were verified with automated tests only. I did not perform manual testing against a running Quality-time instance. Testing ran on Node.js 24.19.0 rather than the repository's requested Node.js 26.11.1.
 
 Toolkit
-- Tool: Vitest, ESLint, Prettier, npm, and Git Bash, used to establish baseline test and quality-check results. The ship-gate was installed to automate these checks before opening the PR.
-- What it produced: A baseline of 1,108 passing tests, a successful frontend build, and working Windows-compatible lint and formatting checks.
+- Tool: Vitest, ESLint, Prettier, lockfile-lint, npm, Git Bash, and the Unit 7 ship-gate, used to establish baseline results and verify the fix before opening the PR.
+- What it produced: A baseline of 1,108 passing tests, three regression tests that failed before the fix and passed after it, a passing full suite and build after the fix, and a passing ship-gate run.
 - Difficulties: The initial test suite had timezone-dependent failures, while ESLint and Prettier encountered shell and line-ending compatibility problems on Windows.
 - What changed: I used UTC for date-sensitive tests and separated linting from formatting with an automatic line-ending setting. This allowed verification without modifying unrelated source files.
 Implementation Notes
@@ -306,42 +316,52 @@ October 28, 2026 — Revised and passed plan-check
 
 I created plan.md and plan-comment.md and ran Claude Code's plan-check against issue #12823. The first version was rejected for not following the maintainer's April 15 wording and for not specifying exact notification test expectations. Later versions were rejected because the plan and the comment disagreed on whether the PR would introduce new report-wide HTTP error handling. I revised the plan to keep that additional behavior conditional on maintainer approval. The final plan-check result was accept, with all six required checks passing. I have not posted plan-comment.md to GitHub.
 
-Implementation of issue #12823 — Pending
+November 1, 2026 — Implemented the fix for issue #12823
 
-The actual source-code modifications, new tests, and implementation commits will be documented here after they are completed.
+I implemented the fix with Claude Code in one commit, Clarify measurement fetch error notifications, which changed four files:
+- components/frontend/src/metric/MetricDetails.jsx: The notification title now says the frontend could not reach the Quality-time API-server to retrieve measurements for the named metric in the named subject and asks the user to check network connectivity. The names come from the existing getMetricName and getSubjectName helpers, which fall back to the type name when no custom name exists. fetchMeasurements() receives the names at both the initial-load and reload call sites. HTTP errors now show labeled status code and message values, and rejected requests keep the original error message.
+- components/frontend/src/PageContent.jsx: The report-wide notification uses the same connectivity wording without naming a metric or subject, because that request covers many metrics.
+- components/frontend/src/metric/MetricDetails.test.jsx and components/frontend/src/PageContent.test.jsx: Three regression tests were updated for Cases A, B, and C.
+
+I first confirmed that the three updated tests failed against the original implementation, then confirmed that all 29 focused tests passed after the change. I recorded the ESLint dependency suppression as a deviation and kept report-wide ok === false handling out of scope.
+
+November 1, 2026 — Passed the ship-gate and opened the PR
+
+I reran the full frontend suite, ESLint, Prettier, lockfile-lint, and the production build, and all passed apart from the pre-existing DashboardCard.jsx ESLint warning. The ship-gate passed all required checks, and Claude Code then opened PR #14940.
 
 Toolkit
-- Tool: Claude Code, Git, npm, Vitest, ESLint, Prettier, and the Unit 7 ship-gate installer.
-- What it produced: A working local contribution environment, validated baseline checks, functioning GitHub safeguards, and an accepted implementation plan for issue #12823.
-- Difficulties: Git Bash required different Windows path and Python commands, and timezone and line-ending behavior disrupted tests and linting. Plan-check also rejected several drafts because the wording, tests, and scope did not fully agree with the maintainer's direction.
-- What changed: I adapted the commands without rewriting unrelated files, revised the plan to include exact expected messages and tests, and made extra report-wide HTTP error handling conditional. Plan-check finally returned accept with six passing checks.
+- Tool: Claude Code, Git, npm, Vitest, ESLint, Prettier, the Unit 7 ship-gate, and GitHub CLI.
+- What it produced: A working local contribution environment, validated baseline checks, functioning GitHub safeguards, an accepted implementation plan, a one-commit fix with three regression tests, and PR #14940.
+- Difficulties: Git Bash required different Windows path and Python commands, and timezone and line-ending behavior disrupted tests and linting. Plan-check also rejected several drafts because the wording, tests, and scope did not fully agree with the maintainer's direction. During implementation, passing the names into the fetching effect raised an ESLint dependency rule that the plan had not anticipated.
+- What changed: I adapted the commands without rewriting unrelated files, revised the plan to include exact expected messages and tests, and made extra report-wide HTTP error handling conditional. Plan-check finally returned accept with six passing checks. I resolved the dependency warning with a focused suppression instead of changing fetching behavior, and recorded it as a deviation.
 Pull Request
-PR Link: Not opened yet.
+PR Link: https://github.com/ICTU/quality-time/pull/14940
+
+PR Title: Clarify measurement fetch error notifications (#12823)
 
 PR Description:
 
-The planned pull request will improve the error notifications displayed when Quality Time cannot retrieve measurements.
+The pull request improves the error notifications displayed when Quality Time cannot retrieve measurements, following the maintainer's suggested wording in issue #12823.
 
-The changes will focus on the measurement-fetch error-handling logic in PageContent.jsx and MetricDetails.jsx, together with their relevant tests.
+- MetricDetails.jsx: The title names the metric and subject and asks the user to check network connectivity. HTTP error responses show a labeled status code and message, and rejected requests keep the original error message without an invented status code.
+- PageContent.jsx: The report-wide title uses the same connectivity wording without naming a metric or subject.
 
-The description will include the actual implementation, before-and-after notification behavior, evidence from the tests, and a statement describing how AI tools contributed to the work.
+The description explains the scope limits: report-wide ok === false responses still do not produce a notification, and the focused ESLint dependency suppression keeps measurement fetching unchanged. It lists the before-and-after test results, notes that no manual testing was performed against a running instance and that tests ran on Node.js 24.19.0, and describes how Claude Code contributed. It asks the maintainers whether the report-wide wording is appropriate and whether report-wide ok === false handling belongs in this PR or a separate issue.
 
-The PR will reference issue #12823 using:
+The PR references the issue with:
 
 Fixes #12823
 
-This section will be updated with the final PR description after implementation and validation.
-
 Maintainer Feedback:
-- October 28, 2026: No pull request has been opened yet, so no PR review feedback has been received.
-- Pending: Record any maintainer comments and responses after opening the PR.
-Status: Not opened yet.
+- No maintainer feedback has been received yet.
+- Pending: Record any maintainer comments and responses during Unit 8.
+Status: Awaiting review.
 
 Toolkit
-- Tool: Claude Code, the voice guard, ship-gate, and GitHub CLI, prepared for use during PR creation.
-- What it produced: The ship-gate and voice guard were verified independently. A final PR draft and successful branch validation are still pending.
-- Difficulties: The initial setup required adjustments for Windows compatibility. No actual PR submission has occurred yet.
-- What changed: I established the validation commands and confirmed that the hooks can block incomplete GitHub operations. The final PR creation results will be documented after the pull request is opened.
+- Tool: Claude Code, the voice guard, the Unit 7 ship-gate, and GitHub CLI.
+- What it produced: PR #14940, opened through Claude Code after the ship-gate passed all required checks.
+- Difficulties: The initial setup required adjustments for Windows compatibility. The PR description also had to explain a plan deviation and a deliberately excluded behavior so reviewers would not mistake them for oversights.
+- What changed: I established Windows-compatible validation commands, confirmed that the hooks block incomplete GitHub operations, and opened the PR only after the ship-gate passed. The PR now awaits maintainer review.
 Learnings and Reflections
 Technical Skills Gained
 
@@ -365,6 +385,8 @@ The largest setup challenge was running the repository's quality checks on Windo
 
 Instead of modifying unrelated code, I investigated the environment and adjusted the commands. This allowed me to establish a reliable baseline before making changes to the application.
 
+During implementation, passing the metric and subject names into the fetching effect conflicted with an ESLint dependency rule. Following the rule would have changed when measurements are fetched, so I used a focused suppression and documented it as a deviation instead of silently changing behavior.
+
 What I'd Do Differently Next Time
 
 Next time, I would inspect the repository's development requirements and operating-system assumptions before running its tooling. This would help me identify possible compatibility problems earlier.
@@ -373,7 +395,7 @@ I would also separate environment problems from actual code problems before atte
 
 For future open-source contributions, I want to establish a repeatable test baseline, write down the expected behavior, and make the smallest change that satisfies the issue.
 
-I will update these reflections after implementing the fix and receiving any maintainer feedback.
+Writing tests that failed against the original implementation before changing the code gave me confidence that the tests actually checked the requested behavior. I will update these reflections after receiving maintainer feedback.
 Resources Used
 - Quality Time issue #12823 — The original issue and maintainer discussion defining the requested notification improvement.
 - Quality Time repository — Source code and existing frontend tests used to investigate the issue.
